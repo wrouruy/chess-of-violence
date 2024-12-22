@@ -6,8 +6,8 @@ const ctx = canvas.getContext('2d');
 const pawImg = new Image()
 const bgImg = new Image()
 
-pawImg.src = './img/pawn.png'
-bgImg.src = './img/background.png'
+pawImg.src = '/img/pawn.png'
+bgImg.src = '/img/background.png'
 // const camera = {
 //     x: 0,
 //     y: 0
