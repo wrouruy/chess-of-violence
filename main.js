@@ -125,7 +125,7 @@ function draw() {
             angle: angle,
         });
     
-        // player.isShoot = false;
+        player.isShoot = false;
     }
     for (let i = 0; i < allBullet.length; i++) {
         const bullet = allBullet[i];
