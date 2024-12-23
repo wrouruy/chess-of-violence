@@ -124,7 +124,6 @@ function draw() {
             y: player.y + 65 + Math.sin(angle) * 50,
             angle: angle,
         });
-    
         player.isShoot = false;
     }
     for (let i = 0; i < allBullet.length; i++) {
