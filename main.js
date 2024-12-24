@@ -7,14 +7,13 @@ const pawImg = new Image()
 const bgImg = new Image()
 const gunImg = new Image()
 const bulletImg = new Image()
+const dummyImg = new Image()
 
 pawImg.src = './img/pawn.png';
 bgImg.src = './img/background.png';
 gunImg.src = './img/gun.png';
 bulletImg.src = './img/bullet.png';
-
-ctx.font = '25px Silkscreen';
-ctx.strokeStyle = 'white'
+dummyImg.src = './img/dummy.png';
 
 let player = {
     x: 0,
@@ -28,7 +27,16 @@ let player = {
     moveUp: false,
     velocity: 2.5,
     isShoot: false
-}
+};
+let dummy = {
+    x: -40,
+    y: -350,
+    width: 80,
+    height: 155,
+    hp: 100,
+    timeout: 0 
+};
+
 player.x -= player.width / 2
 player.y -= player.height / 2
 
@@ -39,8 +47,7 @@ const room = {
     y: -320
 }
 let allBullet = []
-
-let cursorX, cursorY
+let cursorX, cursorY;
 
 document.addEventListener('keydown', function(e){
     if(e.keyCode === 68){player.moveRight = true}
@@ -69,9 +76,7 @@ document.onmousemove = function (e) {
     cursorX = e.clientX - rect.left - canvas.width / 2;
     cursorY = e.clientY - rect.top - canvas.height / 2;
 };
-document.addEventListener('click', function(){
-    player.isShoot = true
-})
+document.addEventListener('click', function(){ player.isShoot = true });
 
 function draw() {
     [canvas.width, canvas.height] = [window.innerWidth, window.innerHeight];
@@ -83,7 +88,7 @@ function draw() {
     if (player.moveDown) player.y += player.velocity;
     if (player.moveUp) player.y -= player.velocity;
 
-    // collision with wall at room
+    // collision player with wall of room
     if (player.x + player.width > room.x + room.width) {
         player.moveRight = false;
         player.x -= player.velocity;
@@ -101,6 +106,7 @@ function draw() {
         player.y += player.velocity;
     }
 
+    // draw grey background
     ctx.fillStyle = '#252525';
     ctx.fillRect(-canvas.width / 2, -canvas.height / 2, canvas.width, canvas.height);
 
@@ -114,11 +120,11 @@ function draw() {
                 player.width * 2,
                 player.width * 2
             );
-        }
-    }
+    }}
+
+    // event for shoot a bullet
+    angle = Math.atan2(cursorY - (player.y + 85), cursorX - (player.x + 60));
     if (player.isShoot) {
-        angle = Math.atan2(cursorY - (player.y + 85), cursorX - (player.x + 60));
-    
         allBullet.push({
             x: player.x + 60 + Math.cos(angle) * 50,
             y: player.y + 65 + Math.sin(angle) * 50,
@@ -126,30 +132,51 @@ function draw() {
         });
         player.isShoot = false;
     }
+    // move a bullet
     for (let i = 0; i < allBullet.length; i++) {
         const bullet = allBullet[i];
 
-        bullet.x += Math.cos(bullet.angle) * 10;
-        bullet.y += Math.sin(bullet.angle) * 10;
+        bullet.x += Math.cos(bullet.angle) * 20;
+        bullet.y += Math.sin(bullet.angle) * 20;
     
         ctx.save();
         ctx.translate(bullet.x, bullet.y);
         ctx.rotate(bullet.angle);
         ctx.drawImage(bulletImg, -6, -7.5, 12, 15);
         ctx.restore();
-    }
-    
 
+        if(allBullet[i].x > dummy.x && allBullet[i].x < dummy.x + dummy.width && 
+            allBullet[i].y > dummy.y && allBullet[i].y < dummy.y + dummy.height 
+        ){
+            if(dummy.timeout <= 0) dummy.hp -= 10;
+            dummy.timeout = 20
+        }
+        dummy.timeout -= 1
+
+        // // collision bullet with wall of room
+        // if (allBullet.length > 0 && allBullet[i].x < room.x + 25) allBullet.splice(i, 1);
+        // if(allBullet.length > 0 && allBullet[i].x > room.x + room.width - 25) allBullet.splice(i, 1);
+        // if(allBullet.length > 0 && allBullet[i].y < room.y + 25) allBullet.splice(i, 1);
+        // if(allBullet.length > 0 && allBullet[i].y > room.y + room.height - 25) allBullet.splice(i, 1);
+    }
+    if(dummy.hp > 0){
+        ctx.fillStyle = 'green'
+        ctx.fillRect(dummy.x - 10, dummy.y - 20, dummy.hp, 15) 
+        ctx.strokeRect(dummy.x - 10, dummy.y - 20, 100, 15)
+        ctx.font = '15px Silkscreen';
+        ctx.fillStyle = 'black'
+        ctx.fillText(`${dummy.hp} hp`, dummy.x - 5, dummy.y - 7.5)
+        ctx.drawImage(dummyImg, dummy.x, dummy.y, dummy.width, dummy.height) // draw dummy
+    }
+    ctx.drawImage(pawImg, player.x, player.y, player.width, player.height); // draw paw(player)
+    
+    // draw a gun
     ctx.save();
     ctx.translate(player.x + 60, player.y + 85);
-    angle = Math.atan2(cursorY - (player.y + 85), cursorX - (player.x + 60));
     ctx.rotate(angle);
-    ctx.drawImage(gunImg, -5, -15, 75, 50);
-
-
+    ctx.drawImage(gunImg, -5, -30, 75, 50);
     ctx.restore();
 
-    ctx.drawImage(pawImg, player.x, player.y, player.width, player.height);
     requestAnimationFrame(draw);
 }
 document.onload = draw()
