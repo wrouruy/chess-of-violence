@@ -47,6 +47,7 @@ const room = {
     y: -320
 }
 let allBullet = []
+
 let cursorX, cursorY;
 
 document.addEventListener('keydown', function(e){
@@ -89,22 +90,10 @@ function draw() {
     if (player.moveUp) player.y -= player.velocity;
 
     // collision player with wall of room
-    if (player.x + player.width > room.x + room.width) {
-        player.moveRight = false;
-        player.x -= player.velocity;
-    }
-    if (player.x < room.x) {
-        player.moveLeft = false;
-        player.x += player.velocity;
-    }
-    if (player.y + player.height > room.y + room.height) {
-        player.moveUp = false;
-        player.y -= player.velocity;
-    }
-    if (player.y + player.height - 27 < room.y) {
-        player.moveDown = false;
-        player.y += player.velocity;
-    }
+    if (player.x + player.width > room.x + room.width) player.x -= player.velocity;
+    if (player.x < room.x) player.x += player.velocity;
+    if (player.y + player.height > room.y + room.height) player.y -= player.velocity;
+    if (player.y + player.height - 27 < room.y) player.y += player.velocity;
 
     // draw grey background
     ctx.fillStyle = '#252525';
@@ -123,12 +112,12 @@ function draw() {
     }}
 
     // event for shoot a bullet
-    angle = Math.atan2(cursorY - (player.y + 85), cursorX - (player.x + 60));
+    const angle = Math.atan2(cursorY - (player.y + 85), cursorX - (player.x + 60));
     if (player.isShoot) {
         allBullet.push({
             x: player.x + 60 + Math.cos(angle) * 50,
             y: player.y + 65 + Math.sin(angle) * 50,
-            angle: angle,
+            angle: angle
         });
         player.isShoot = false;
     }
@@ -145,20 +134,23 @@ function draw() {
         ctx.drawImage(bulletImg, -6, -7.5, 12, 15);
         ctx.restore();
 
-        if(allBullet[i].x > dummy.x && allBullet[i].x < dummy.x + dummy.width && 
-            allBullet[i].y > dummy.y && allBullet[i].y < dummy.y + dummy.height 
+        // injury dummy (with bullet)
+        if(bullet.x > dummy.x && bullet.x < dummy.x + dummy.width && 
+            bullet.y > dummy.y && bullet.y < dummy.y + dummy.height
         ){
             if(dummy.timeout <= 0) dummy.hp -= 10;
-            dummy.timeout = 20
+            dummy.timeout = 20;
+            allBullet.splice(i, 1);
         }
-        dummy.timeout -= 1
+       
 
-        // // collision bullet with wall of room
-        // if (allBullet.length > 0 && allBullet[i].x < room.x + 25) allBullet.splice(i, 1);
-        // if(allBullet.length > 0 && allBullet[i].x > room.x + room.width - 25) allBullet.splice(i, 1);
-        // if(allBullet.length > 0 && allBullet[i].y < room.y + 25) allBullet.splice(i, 1);
-        // if(allBullet.length > 0 && allBullet[i].y > room.y + room.height - 25) allBullet.splice(i, 1);
+        // collision bullet with wall of room
+        if(bullet.x > room.x + room.width || bullet.x < room.x ||
+            bullet.y > room.y + room.height || bullet.y < room.y
+        ) allBullet.splice(i, 1);
     }
+    dummy.timeout--;
+
     if(dummy.hp > 0){
         ctx.fillStyle = 'green'
         ctx.fillRect(dummy.x - 10, dummy.y - 20, dummy.hp, 15) 
@@ -167,7 +159,8 @@ function draw() {
         ctx.fillStyle = 'black'
         ctx.fillText(`${dummy.hp} hp`, dummy.x - 5, dummy.y - 7.5)
         ctx.drawImage(dummyImg, dummy.x, dummy.y, dummy.width, dummy.height) // draw dummy
-    }
+    } else dummy.width, dummy.height, dummy.x, dummy.y = null; // remove dull after his kill
+
     ctx.drawImage(pawImg, player.x, player.y, player.width, player.height); // draw paw(player)
     
     // draw a gun
