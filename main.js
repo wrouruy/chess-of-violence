@@ -3,6 +3,7 @@ const ctx = canvas.getContext('2d');
 
 [canvas.width, canvas.height] = [window.innerWidth, window.innerHeight];
 
+// import image
 const pawImg = new Image()
 const bgImg = new Image()
 const gunImg = new Image()
@@ -33,8 +34,7 @@ let dummy = {
     y: -350,
     width: 80,
     height: 155,
-    hp: 100,
-    timeout: 0 
+    hp: 100
 };
 
 player.x -= player.width / 2
@@ -77,7 +77,10 @@ document.onmousemove = function (e) {
     cursorX = e.clientX - rect.left - canvas.width / 2;
     cursorY = e.clientY - rect.top - canvas.height / 2;
 };
-document.addEventListener('click', function(){ player.isShoot = true });
+document.addEventListener('click', function(){ 
+    new Audio('./audio/shoot.mp3').play()
+    player.isShoot = true 
+});
 
 function draw() {
     [canvas.width, canvas.height] = [window.innerWidth, window.innerHeight];
@@ -138,28 +141,26 @@ function draw() {
         if(bullet.x > dummy.x && bullet.x < dummy.x + dummy.width && 
             bullet.y > dummy.y && bullet.y < dummy.y + dummy.height
         ){
-            if(dummy.timeout <= 0) dummy.hp -= 10;
-            dummy.timeout = 20;
+            dummy.hp -= 10;
             allBullet.splice(i, 1);
         }
        
 
         // collision bullet with wall of room
-        if(bullet.x > room.x + room.width || bullet.x < room.x ||
-            bullet.y > room.y + room.height || bullet.y < room.y
+        if(bullet.x > room.x + room.width - 20 || bullet.x < room.x + 20 ||
+            bullet.y > room.y + room.height - 20 || bullet.y < room.y + 20
         ) allBullet.splice(i, 1);
     }
-    dummy.timeout--;
 
-    if(dummy.hp > 0){
+    if(dummy.hp > 0){ // draw the dummy if it is not dead
         ctx.fillStyle = 'green'
         ctx.fillRect(dummy.x - 10, dummy.y - 20, dummy.hp, 15) 
         ctx.strokeRect(dummy.x - 10, dummy.y - 20, 100, 15)
         ctx.font = '15px Silkscreen';
-        ctx.fillStyle = 'black'
+        ctx.fillStyle = 'black';
         ctx.fillText(`${dummy.hp} hp`, dummy.x - 5, dummy.y - 7.5)
         ctx.drawImage(dummyImg, dummy.x, dummy.y, dummy.width, dummy.height) // draw dummy
-    } else dummy.width, dummy.height, dummy.x, dummy.y = null; // remove dull after his kill
+    } else dummy.width, dummy.height, dummy.x, dummy.y = canvas.width; // remove dull after his kill
 
     ctx.drawImage(pawImg, player.x, player.y, player.width, player.height); // draw paw(player)
     
