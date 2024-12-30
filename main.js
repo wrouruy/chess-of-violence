@@ -16,12 +16,14 @@ gunImg.src = './img/gun.png';
 bulletImg.src = './img/bullet.png';
 dummyImg.src = './img/dummy.png';
 
-let player = {
+
+
+player = {
     x: 0,
     y: 0,
     width: 80,
     height: 155,
-
+    
     moveLeft: false,
     moveRight: false,
     moveDown: false,
@@ -29,13 +31,13 @@ let player = {
     velocity: 2.5,
     isShoot: false
 };
-let dummy = {
+dummy = {
     x: -40,
-    y: -350,
+    y: -450,
     width: 80,
     height: 155,
     hp: 100
-};
+}
 
 player.x -= player.width / 2
 player.y -= player.height / 2
@@ -51,26 +53,26 @@ let allBullet = []
 let cursorX, cursorY;
 
 document.addEventListener('keydown', function(e){
-    if(e.keyCode === 68){player.moveRight = true}
-    if(e.keyCode === 65){player.moveLeft = true}
-    if(e.keyCode === 83){player.moveDown = true}
-    if(e.keyCode === 87){player.moveUp = true}
+    if(e.keyCode === 68) player.moveRight = true;
+    if(e.keyCode === 65) player.moveLeft = true;
+    if(e.keyCode === 83) player.moveDown = true;
+    if(e.keyCode === 87) player.moveUp = true;
 
-    if(e.key === 'ArrowRight'){player.moveRight = true}
-    if(e.key === 'ArrowLeft'){player.moveLeft = true}
-    if(e.key === 'ArrowDown'){player.moveDown = true}
-    if(e.key === 'ArrowUp'){player.moveUp = true}
+    if(e.key === 'ArrowRight') player.moveRight = true;
+    if(e.key === 'ArrowLeft') player.moveLeft = true;
+    if(e.key === 'ArrowDown') player.moveDown = true;
+    if(e.key === 'ArrowUp') player.moveUp = true;
 });
 document.addEventListener('keyup', function(e){
-    if(e.keyCode === 68){player.moveRight = false}
-    if(e.keyCode === 65){player.moveLeft = false}
-    if(e.keyCode === 83){player.moveDown = false}
-    if(e.keyCode === 87){player.moveUp = false}
+    if(e.keyCode === 68) player.moveRight = false;
+    if(e.keyCode === 65) player.moveLeft = false;
+    if(e.keyCode === 83) player.moveDown = false;
+    if(e.keyCode === 87) player.moveUp = false;
 
-    if(e.key === 'ArrowRight'){player.moveRight = false}
-    if(e.key === 'ArrowLeft'){player.moveLeft = false}
-    if(e.key === 'ArrowDown'){player.moveDown = false}
-    if(e.key === 'ArrowUp'){player.moveUp = false}
+    if(e.key === 'ArrowRight') player.moveRight = false;
+    if(e.key === 'ArrowLeft') player.moveLeft = false;
+    if(e.key === 'ArrowDown') player.moveDown = false;
+    if(e.key === 'ArrowUp') player.moveUp = false;
 });
 document.onmousemove = function (e) {
     const rect = canvas.getBoundingClientRect();
@@ -79,7 +81,7 @@ document.onmousemove = function (e) {
 };
 document.addEventListener('click', function(){ 
     new Audio('./audio/shoot.mp3').play()
-    player.isShoot = true 
+    player.isShoot = true;
 });
 
 function draw() {
@@ -97,6 +99,11 @@ function draw() {
     if (player.x < room.x) player.x += player.velocity;
     if (player.y + player.height > room.y + room.height) player.y -= player.velocity;
     if (player.y + player.height - 27 < room.y) player.y += player.velocity;
+    // collision dummy with wall of room
+    if (dummy.x + dummy.width > room.x + room.width) dummy.x -= player.velocity;
+    if (dummy.x < room.x) dummy.x += player.velocity;
+    if (dummy.y + dummy.height > room.y + room.height) dummy.y -= player.velocity;
+    if (dummy.y + dummy.height - 27 < room.y) dummy.y += player.velocity;
 
     // draw grey background
     ctx.fillStyle = '#252525';
@@ -120,7 +127,9 @@ function draw() {
         allBullet.push({
             x: player.x + 60 + Math.cos(angle) * 50,
             y: player.y + 65 + Math.sin(angle) * 50,
-            angle: angle
+            angle: angle,
+            ricochetX: 1,
+            ricochetY: 1
         });
         player.isShoot = false;
     }
@@ -128,8 +137,8 @@ function draw() {
     for (let i = 0; i < allBullet.length; i++) {
         const bullet = allBullet[i];
 
-        bullet.x += Math.cos(bullet.angle) * 20;
-        bullet.y += Math.sin(bullet.angle) * 20;
+        bullet.x += (Math.cos(bullet.angle) * 20) * allBullet[i].ricochetX;
+        bullet.y += (Math.sin(bullet.angle) * 20) * allBullet[i].ricochetY;
     
         ctx.save();
         ctx.translate(bullet.x, bullet.y);
@@ -146,10 +155,16 @@ function draw() {
         }
        
 
+        // ricochet bullet with wall of room
+        if(i < allBullet.length){
+            if(allBullet[i].x > room.x + room.width || allBullet[i].x < room.x) allBullet[i].ricochetX *= -1;
+            if(allBullet[i].y > room.y + room.height || allBullet[i].y < room.y) allBullet[i].ricochetY *= -1;
+        }
+
         // collision bullet with wall of room
-        if(bullet.x > room.x + room.width - 20 || bullet.x < room.x + 20 ||
-            bullet.y > room.y + room.height - 20 || bullet.y < room.y + 20
-        ) allBullet.splice(i, 1);
+        // if(bullet.x > room.x + room.width - 20 || bullet.x < room.x + 20 ||
+        //     bullet.y > room.y + room.height - 20 || bullet.y < room.y + 20
+        // ) allBullet.splice(i, 1);
     }
 
     if(dummy.hp > 0){ // draw the dummy if it is not dead
@@ -160,10 +175,13 @@ function draw() {
         ctx.fillStyle = 'black';
         ctx.fillText(`${dummy.hp} hp`, dummy.x - 5, dummy.y - 7.5)
         ctx.drawImage(dummyImg, dummy.x, dummy.y, dummy.width, dummy.height) // draw dummy
-    } else dummy.width, dummy.height, dummy.x, dummy.y = canvas.width; // remove dull after his kill
+    } else {
+        dummy.hp = 100
+        dummy.y = -canvas.height
+    }
 
     ctx.drawImage(pawImg, player.x, player.y, player.width, player.height); // draw paw(player)
-    
+
     // draw a gun
     ctx.save();
     ctx.translate(player.x + 60, player.y + 85);
