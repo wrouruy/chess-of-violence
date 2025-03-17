@@ -163,7 +163,6 @@ function draw() {
             bullet.y > room.y + room.height - 20 || bullet.y < room.y + 20
         ) allBullet.splice(i, 1);
     }
-
     if(dummy.hp > 0){ // draw the dummy if it is not dead
         ctx.fillStyle = 'green'
         ctx.fillRect(dummy.x - 10, dummy.y - 20, dummy.hp, 15) 
