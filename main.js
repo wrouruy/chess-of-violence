@@ -47,7 +47,6 @@ const room = {
     y: -320
 }
 let allBullet = []
-
 let cursorX, cursorY;
 
 document.addEventListener('keydown', function(e){
