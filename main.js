@@ -16,8 +16,6 @@ gunImg.src = './img/gun.png';
 bulletImg.src = './img/bullet.png';
 dummyImg.src = './img/dummy.png';
 
-
-
 player = {
     x: 0,
     y: 0,
@@ -132,6 +130,7 @@ function draw() {
             ricochetY: 1
         });
         player.isShoot = false;
+        console.log(angle)
     }
     // move a bullet
     for (let i = 0; i < allBullet.length; i++) {
@@ -146,14 +145,13 @@ function draw() {
         ctx.drawImage(bulletImg, -6, -7.5, 12, 15);
         ctx.restore();
 
-        // injury dummy (with bullet)
+        // injury dummy (from bullet)
         if(bullet.x > dummy.x && bullet.x < dummy.x + dummy.width && 
             bullet.y > dummy.y && bullet.y < dummy.y + dummy.height
         ){
             dummy.hp -= 10;
             allBullet.splice(i, 1);
         }
-       
 
         // ricochet bullet with wall of room
         if(i < allBullet.length){
@@ -162,9 +160,9 @@ function draw() {
         }
 
         // collision bullet with wall of room
-        // if(bullet.x > room.x + room.width - 20 || bullet.x < room.x + 20 ||
-        //     bullet.y > room.y + room.height - 20 || bullet.y < room.y + 20
-        // ) allBullet.splice(i, 1);
+        if(bullet.x > room.x + room.width - 20 || bullet.x < room.x + 20 ||
+            bullet.y > room.y + room.height - 20 || bullet.y < room.y + 20
+        ) allBullet.splice(i, 1);
     }
 
     if(dummy.hp > 0){ // draw the dummy if it is not dead
