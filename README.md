@@ -1,5 +1,5 @@
 ## How to run the Code?
-- just open index.html in your browser
+Just open index.html in your browser
 
 ## All player abilities:
 - Move players using the WASD or arrow keys
